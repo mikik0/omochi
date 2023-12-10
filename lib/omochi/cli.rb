@@ -21,7 +21,6 @@ module Omochi
       end
       p def_name_hash
       find_spec_files(def_name_hash)
-      return true
     end
 
     desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
