@@ -13,13 +13,13 @@ module Omochi
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
     def verify(path)
-      @def_name_hash = {}
+      def_name_hash = []
       diff_paths = local_diff_path(path)
       exprs = get_public_method(diff_paths)
-      p exprs
       exprs.each do |expr|
-        p expr
+        dfs(expr[:ast], expr[:filename], def_name_hash)
       end
+      p def_name_hash
     end
 
     desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
