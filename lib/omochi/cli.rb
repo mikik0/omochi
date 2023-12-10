@@ -12,7 +12,8 @@ module Omochi
     end
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
-    def verify()
+    def verify(path)
+      local_diff_path(path)
     end
 
     desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
