@@ -4,7 +4,7 @@ require 'parser/current'
 
 include AST::Processor::Mixin
 
-def local_diff_path(repository_path)
+def local_diff_path()
   # Gitがインストールされているか確認
   unless system('git --version > /dev/null 2>&1')
     puts "Error: Git is not installed. Please install Git."
@@ -13,7 +13,7 @@ def local_diff_path(repository_path)
 
   # ローカルのdiffを取得する
   diff_command = "git diff --name-only"
-  diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: repository_path)
+  diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: ".")
 
   # エラーチェック
   unless _diff_status.success?
@@ -50,4 +50,25 @@ def dfs(node, filename, def_name_hash)
 
   # 子ノードに対して再帰的に深さ優先探索
   node.children.each { |child| dfs(child, filename, def_name_hash) }
+end
+
+def find_spec_files(methods_data)
+  spec_files = []
+
+  methods_data.each do |data|
+    diff_path = data[:diff_path]
+    def_name = data[:def_name]
+
+    # 対応するspecファイルのパスを構築
+    spec_path = File.join('spec', diff_path.sub(/\.rb$/, '_spec.rb'))
+
+    # specファイルが存在するか確認
+    if File.exist?(spec_path)
+      spec_files << spec_path
+    else
+      puts "Spec file not found for method '#{def_name}' in '#{diff_path}'."
+    end
+  end
+
+  spec_files
 end
