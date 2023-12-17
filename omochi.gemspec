@@ -5,6 +5,8 @@ require_relative "lib/omochi/version"
 Gem::Specification.new do |spec|
   spec.name = "omochi"
   spec.version = Omochi::VERSION
+  spec.authors = ["mikiko.hashino"]
+  spec.email = ["mikiko.hashino@enigmo.co.jp"]
 
   spec.summary = "Write a short summary, because RubyGems requires one."
   spec.description = "Write a longer description or delete this line."
