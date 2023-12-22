@@ -13,14 +13,18 @@ module Omochi
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
     def verify()
+      p "差分のあったファイルの全ての関数がテストされているかを確認します。テストされていない関数の一覧を表示します。"
       perfect = true
       result = {}
       def_name_arr = []
       diff_paths = local_diff_path()
+      p "local diff path: #{diff_paths}"
       # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb", "spec/lib/omochi/cli_spec.rb"]
       diff_paths.each do |diff_path|
         spec_file_path = find_spec_file(diff_path)
+        p "spec_file_path: #{spec_file_path}"
         if !spec_file_path.nil?
+          p "specファイルあり"
           # ここから対応するSpecファイルが存在した場合のロジック
           # スペックファイルがあれば、specfileの中身を確認していく。
           # defメソッド名だけ切り出す {:call => false, :verify => false, ....}
@@ -46,6 +50,7 @@ module Omochi
           end
         else
           # ここから対応するSpecファイルが存在しない場合のロジック
+          p "specファイルなし"
           exprs = get_public_method(diff_path)
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
