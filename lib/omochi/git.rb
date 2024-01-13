@@ -47,7 +47,7 @@ def dfs(node, filename, result)
 end
 
 def find_spec_file(diff_path)
-  spec_path = File.join('spec', diff_path.sub(/\.rb$/, '_spec.rb'))
+  spec_path = File.join('spec', diff_path.gsub(/\.rb$/, '_spec.rb').gsub(/\/app\//, '/'))
   return File.exist?(spec_path) ? spec_path : nil
 end
 
