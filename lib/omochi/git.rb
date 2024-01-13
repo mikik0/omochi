@@ -78,8 +78,10 @@ def dfs_describe(node, filename, def_name_arr)
     method_node = node.children[1]
     if node.children[1] == :describe
       def_name = node.children[2].children[0] # "Omochi::CLI"
-      def_name = get_pure_function_name(def_name)
-      def_name_arr.push(def_name)
+      if !def_name.nil?
+        def_name = get_pure_function_name(def_name)
+        def_name_arr.push(def_name)
+      end
     end
   end
 
