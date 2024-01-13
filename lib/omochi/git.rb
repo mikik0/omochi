@@ -60,6 +60,15 @@ end
 #   exprs
 # end
 
+# rspecのdescribeでは、通常 # または . の直後に関数名を書くため
+def get_pure_function_name(str)
+  if str.start_with?("#", ".")
+    str[1..-1]  # 2番目以降の文字列を返す
+  else
+    str        # 変更が不要な場合はそのまま返す
+  end
+end
+
 def dfs_describe(node, filename, def_name_arr)
   return unless node.is_a?(Parser::AST::Node)
 
@@ -69,6 +78,7 @@ def dfs_describe(node, filename, def_name_arr)
     method_node = node.children[1]
     if node.children[1] == :describe
       def_name = node.children[2].children[0] # "Omochi::CLI"
+      def_name = get_pure_function_name(def_name)
       def_name_arr.push(def_name)
     end
   end
