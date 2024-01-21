@@ -12,11 +12,23 @@ module Omochi
     end
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
+    method_option :github, aliases: "-h", desc: "Running on GitHub Action"
     def verify()
+      is_gh_action = options[:github]
+      is_gl_ci_runner = false
       perfect = true
       result = {}
       def_name_arr = []
-      diff_paths = local_diff_path()
+
+      case [is_gh_action, is_gl_ci_runner]
+      when [true, false]
+        diff_paths = github_diff_path
+      when [false, true]
+        diff_paths = remote_diff_path
+      when [false, false]
+        diff_paths = local_diff_path
+      end
+
       p "Verify File List: #{diff_paths}"
       # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb", "spec/lib/omochi/cli_spec.rb"]
       diff_paths.each do |diff_path|
