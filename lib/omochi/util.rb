@@ -4,7 +4,6 @@ require 'parser/current'
 
 include AST::Processor::Mixin
 
-
 def local_diff_path()
   # Gitがインストールされているか確認
   unless system('git --version > /dev/null 2>&1')

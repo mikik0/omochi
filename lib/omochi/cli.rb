@@ -36,10 +36,11 @@ module Omochi
         diff_paths = local_diff_path()
       end
 
+      # Ruby 以外のファイル(yamlやmdなど)を除外 specファイルも除外(テストにはテストない)
       diff_paths = diff_paths.reject { |s| !s.end_with?('.rb') || s.end_with?('_spec.rb') }
       p "Verify File List: #{diff_paths}"
 
-      # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb", "spec/lib/omochi/cli_spec.rb"]
+      # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb"]
       diff_paths.each do |diff_path|
         spec_file_path = find_spec_file(diff_path)
         if !spec_file_path.nil?
@@ -104,7 +105,7 @@ module Omochi
 
     desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
     def create()
-      
+
     end
   end
 end
