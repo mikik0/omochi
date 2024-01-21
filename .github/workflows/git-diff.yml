@@ -19,7 +19,7 @@ jobs:
       run: |
         DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
         echo origin/$DEFAULT_BRANCH
-        DIFF=$(git diff --name-only ${{ github.sha }} origin/$DEFAULT_BRANCH)
+        DIFF=$(git diff --name-only ${{ github.sha }} $DEFAULT_BRANCH)
         echo $DIFF
 
     - name: Display Diff
