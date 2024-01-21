@@ -19,13 +19,14 @@ module Omochi
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
     method_option :github, aliases: "-h", desc: "Running on GitHub Action"
+    method_option :create, aliases: "-c", desc: "Create Spec for Untested Method"
     def verify()
       is_gh_action = options[:github] == "github"
       is_gl_ci_runner = false
+      create_spec = options[:create] == "create"
 
       perfect = true
-      result = {}
-      def_name_arr = []
+      spec_def_name_arr = []
 
       case [is_gh_action, is_gl_ci_runner]
       when [true, false]
@@ -42,40 +43,58 @@ module Omochi
 
       # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/util.rb"]
       diff_paths.each do |diff_path|
+        result = {}
         spec_file_path = find_spec_file(diff_path)
+        ignored_def_names = get_ignore_methods(diff_path)
+
         if !spec_file_path.nil?
           p "specファイルあり"
           # ここから対応するSpecファイルが存在した場合のロジック
           # スペックファイルがあれば、specfileの中身を確認していく。
           # defメソッド名だけ切り出す {:call => false, :verify => false, ....}
-          exprs = get_public_method(diff_path) #wip メソッド名ast
+          exprs = get_ast(diff_path)
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
           end
           result = result.transform_keys(&:to_s)
           # describeメソッド [call]
-          exprs = get_public_method(spec_file_path) # []の中にastが入る
+          exprs = get_ast(spec_file_path) # []の中にastが入る
           exprs.each do |expr|
-            def_name_arr = dfs_describe(expr[:ast], expr[:filename], def_name_arr)
+            spec_def_name_arr = dfs_describe(expr[:ast], expr[:filename], spec_def_name_arr)
           end
           # resultのHashでSpecが存在するものをTrueに更新
-          def_name_arr.each do |def_name|
+          spec_def_name_arr.each do |spec_def_name|
+            if result.key?(spec_def_name)
+              result[spec_def_name] = true
+            end
+
+          ignored_def_names.each do |def_name|
             if result.key?(def_name)
               result[def_name] = true
             end
           end
 
+          end
+
           if print_result(diff_path, result).size > 0
             perfect = false
           end
+
+
         else
           # ここから対応するSpecファイルが存在しない場合のロジック
           p "specファイルなし"
-          exprs = get_public_method(diff_path)
+          exprs = get_ast(diff_path)
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
           end
           result = result.transform_keys(&:to_s)
+          ignored_def_names.each do |def_name|
+            if result.key?(def_name)
+              result[def_name] = true
+            end
+          end
+
           if print_result(diff_path, result).size > 0
             perfect = false
           end
@@ -85,7 +104,7 @@ module Omochi
       # perfect じゃない場合は、異常終了する
       exit(perfect ? 0 : 1)
 
-      # exprs = get_public_method(diff_paths)
+      # exprs = get_ast(diff_paths)
       # exprs.each do |expr|
       #   dfs(expr[:ast], expr[:filename], def_name_hash)
       # end
@@ -101,11 +120,6 @@ module Omochi
       # そのファイルをastにして、describeを探す. describe_values
       # テストの見つからなかった関数(関数名+ファイル名)のリストをreturn
       # lenが0だったらsuccess、1異常ならfailでverifyは終わり
-    end
-
-    desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
-    def create()
-
     end
   end
 end

@@ -53,19 +53,18 @@ def remote_diff_path()
   diff_paths = diff_output.split("\n")
 end
 
-def get_public_method(diff_path)
+def get_ast(diff_path)
   exprs = []
-  exprs << {:ast => Parser::CurrentRuby.parse(File.read(diff_path)), :filename => diff_path }
+  ast, comments = Parser::CurrentRuby.parse_with_comments(File.read(diff_path))
+  exprs << {:ast => ast, :filename => diff_path}
 end
 
 def dfs(node, filename, result)
   return unless node.is_a?(Parser::AST::Node)
-  p node
 
   # ノードの種類に応じて処理を実行
   case node.type
   when :send
-    p 'リターンする。'
     return if node.children[1] == :private
   when :def
     # :def ノードの場合、メソッド定義に関する処理を実行
@@ -122,4 +121,24 @@ def print_result(filename, result)
   end
 
   method_list
+end
+
+def get_ignore_methods(diff_path)
+  ignore_methods = []
+  code = File.open(diff_path, "r").read
+  lines = code.split("\n")
+
+  lines.each do |line|
+    if line.match(/omochi:ignore:*/) && line.strip.start_with?("#")
+      @ignore_next_function = true
+    elsif line.match(/\s*def\s+(\w+)/)
+      method_name = $1
+      if @ignore_next_function
+        ignore_methods << method_name
+        @ignore_next_function = false
+      end
+    end
+  end
+
+  return ignore_methods
 end
