@@ -6,6 +6,12 @@ require "omochi/git"
 module Omochi
   # class Error < StandardError; end
   class CLI < Thor
+    class << self
+      def exit_on_failure?
+        true
+      end
+    end
+    
     desc "red WORD", " words print." # コマンドの使用例と、概要
     def red(word) # コマンドはメソッドとして定義する
       say(word, :red)
@@ -16,7 +22,7 @@ module Omochi
     def verify()
       is_gh_action = options[:github] == "github"
       is_gl_ci_runner = false
-      
+
       perfect = true
       result = {}
       def_name_arr = []
