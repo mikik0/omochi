@@ -22,5 +22,6 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.2
-    - run: gem specification -l https://github.com/mikik0/omochi.git
+    - run: gem install specific_install
+    - run: gem specific_install -l https://github.com/mikik0/omochi.git
     - run: omochi verify --github
