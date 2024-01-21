@@ -1,0 +1,27 @@
+name: Git Diff on Push
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  verify_test_for_method:
+
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+    - run: gem install specific_install
+    - run: gem specific_install -l https://github.com/mikik0/omochi.git
+    - run: omochi verify --github

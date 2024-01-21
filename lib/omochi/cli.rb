@@ -6,18 +6,39 @@ require "omochi/git"
 module Omochi
   # class Error < StandardError; end
   class CLI < Thor
+    class << self
+      def exit_on_failure?
+        true
+      end
+    end
+
     desc "red WORD", " words print." # コマンドの使用例と、概要
     def red(word) # コマンドはメソッドとして定義する
       say(word, :red)
     end
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
+    method_option :github, aliases: "-h", desc: "Running on GitHub Action"
     def verify()
+      is_gh_action = options[:github] == "github"
+      is_gl_ci_runner = false
+
       perfect = true
       result = {}
       def_name_arr = []
-      diff_paths = local_diff_path()
+
+      case [is_gh_action, is_gl_ci_runner]
+      when [true, false]
+        diff_paths = github_diff_path()
+      when [false, true]
+        diff_paths = remote_diff_path()
+      when [false, false]
+        diff_paths = local_diff_path()
+      end
+
+      diff_paths = diff_paths.reject { |s| !s.end_with?('.rb') || s.end_with?('_spec.rb') }
       p "Verify File List: #{diff_paths}"
+
       # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb", "spec/lib/omochi/cli_spec.rb"]
       diff_paths.each do |diff_path|
         spec_file_path = find_spec_file(diff_path)
