@@ -60,6 +60,7 @@ end
 
 def dfs(node, filename, result)
   return unless node.is_a?(Parser::AST::Node)
+  p node
 
   # ノードの種類に応じて処理を実行
   case node.type
