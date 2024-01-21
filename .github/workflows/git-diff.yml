@@ -19,7 +19,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Set up Ruby
-      uses: actions/setup-ruby@v1
+      uses: k1LoW/github-script-ruby@v2
       with:
         ruby-version: 3.2
     - run: gem specific_install -l https://github.com/mikik0/omochi.git
