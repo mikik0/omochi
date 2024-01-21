@@ -14,8 +14,9 @@ module Omochi
     desc "verify local_path", "verify spec created for all of new methods and functions"
     method_option :github, aliases: "-h", desc: "Running on GitHub Action"
     def verify()
-      is_gh_action = options[:github]
+      is_gh_action = options[:github] == "github"
       is_gl_ci_runner = false
+      
       perfect = true
       result = {}
       def_name_arr = []
