@@ -64,6 +64,7 @@ def dfs(node, filename, result)
   # ノードの種類に応じて処理を実行
   case node.type
   when :private
+    p 'リターンする。'
     return
   when :def
     # :def ノードの場合、メソッド定義に関する処理を実行
