@@ -12,33 +12,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Get Git Diff
       id: git-diff
       run: |
-        DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-        echo origin/$DEFAULT_BRANCH
-        DIFF=$(git diff --name-only ${{ github.sha }} $DEFAULT_BRANCH)
+        DIFF=$(git diff --name-only origin/${GITHUB_BASE_REF}...origin/${GITHUB_HEAD_REF})
         echo $DIFF
-
-    - name: Display Diff
-      run: |
-        echo "Changed files:"
-        # Use the newline-separated paths in the subsequent steps
-        echo "${{ steps.git-diff.outputs.diff }}"
-
-    - name: Run Ruby Script
-      run: |
-        # Save the diff paths to a variable
-        DIFF_PATHS="${{ steps.git-diff.outputs.diff }}"
-
-        # Run a Ruby script to process the paths and execute 'omochi verify'
-        ruby - <<EORUBY
-          paths = ENV['DIFF_PATHS'].split("\n")
-
-          # Iterate over paths and execute 'omochi verify' for each
-          paths.each do |path|
-            system("omochi verify #{path}")
-          end
-        EORUBY
