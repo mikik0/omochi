@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "omochi"
 require 'thor'
-require "omochi/git"
+require "omochi/util"
 
 module Omochi
   # class Error < StandardError; end
@@ -40,7 +40,7 @@ module Omochi
       diff_paths = diff_paths.reject { |s| !s.end_with?('.rb') || s.end_with?('_spec.rb') }
       p "Verify File List: #{diff_paths}"
 
-      # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb"]
+      # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/util.rb"]
       diff_paths.each do |diff_path|
         spec_file_path = find_spec_file(diff_path)
         if !spec_file_path.nil?

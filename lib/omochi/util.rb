@@ -63,6 +63,8 @@ def dfs(node, filename, result)
 
   # ノードの種類に応じて処理を実行
   case node.type
+  when :private
+    return
   when :def
     # :def ノードの場合、メソッド定義に関する処理を実行
     # ファイル名とメソッド名をつめてます。
@@ -79,14 +81,6 @@ def find_spec_file(diff_path)
   p spec_path
   return File.exist?(spec_path) ? spec_path : nil
 end
-
-# def get_spec_method(diff_spec_path)
-#   exprs = []
-
-#   diff_spec_path
-#     exprs << {:ast => Parser::CurrentRuby.parse(File.read(diff_path)), :filename => diff_path }
-#   exprs
-# end
 
 # rspecのdescribeでは、通常 # または . の直後に関数名を書くため
 def get_pure_function_name(str)
