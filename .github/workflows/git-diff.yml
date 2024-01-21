@@ -18,9 +18,9 @@ jobs:
       id: git-diff
       run: |
         DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+        echo origin/$DEFAULT_BRANCH
         DIFF=$(git diff --name-only ${{ github.sha }} origin/$DEFAULT_BRANCH)
-        # Set the output with newline-separated paths
-        echo "::set-output name=diff::$(echo -e "$DIFF")"
+        echo $DIFF
 
     - name: Display Diff
       run: |
