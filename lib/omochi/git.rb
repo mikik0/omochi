@@ -25,6 +25,21 @@ def local_diff_path()
   diff_paths = diff_output.split("\n")
 end
 
+def remote_diff_path()
+  # リモートのdiffを取得する
+  diff_command = "git diff --name-only origin/${{ github.event.pull_request.base.ref }}..${{ github.sha }}"
+  diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: ".")
+
+  # エラーチェック
+  unless _diff_status.success?
+    puts "Error: Failed to run 'git diff' command."
+    return []
+  end
+
+  # 取得したdiffのpathを返却する
+  diff_paths = diff_output.split("\n")
+end
+
 def get_public_method(diff_path)
   exprs = []
   exprs << {:ast => Parser::CurrentRuby.parse(File.read(diff_path)), :filename => diff_path }
