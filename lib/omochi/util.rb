@@ -64,9 +64,9 @@ def dfs(node, filename, result)
 
   # ノードの種類に応じて処理を実行
   case node.type
-  when :private
+  when :send
     p 'リターンする。'
-    return
+    return if node.children[1] == :private
   when :def
     # :def ノードの場合、メソッド定義に関する処理を実行
     # ファイル名とメソッド名をつめてます。
