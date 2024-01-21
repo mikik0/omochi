@@ -19,6 +19,6 @@ jobs:
     - name: Get Git Diff
       id: git-diff
       run: |
-        git fetch --unshallow
-        DIFF=$(git diff --name-only origin/${GITHUB_BASE_REF}...origin/${GITHUB_HEAD_REF})
-        echo $DIFF
+        base_commit=$(git merge-base ${GITHUB_HEAD_REF} main)
+        head_commit=$(git rev-parse ${GITHUB_HEAD_REF})
+        git diff $base_commit...$head_commit
