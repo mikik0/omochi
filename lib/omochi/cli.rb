@@ -104,6 +104,7 @@ module Omochi
 
     desc "create local_path", "search all of new methods and functions but not spec created yet, after all create spec"
     def create()
+      
     end
   end
 end
