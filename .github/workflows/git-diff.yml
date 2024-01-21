@@ -10,15 +10,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      number: ${{ github.event.number }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Get Git Diff
-      id: git-diff
-      run: |
-        base_commit=$(git merge-base ${GITHUB_HEAD_REF} main)
-        head_commit=$(git rev-parse ${GITHUB_HEAD_REF})
-        git diff $base_commit...$head_commit
+      - run: gh pr diff ${number} --name-only
