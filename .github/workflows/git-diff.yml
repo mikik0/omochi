@@ -13,6 +13,5 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      number: ${{ github.event.number }}
     steps:
-      - run: gh pr diff ${number} --name-only
+      - run: gh pr diff --name-only
