@@ -22,11 +22,11 @@ module Omochi
 
       case [is_gh_action, is_gl_ci_runner]
       when [true, false]
-        diff_paths = github_diff_path
+        diff_paths = github_diff_path()
       when [false, true]
-        diff_paths = remote_diff_path
+        diff_paths = remote_diff_path()
       when [false, false]
-        diff_paths = local_diff_path
+        diff_paths = local_diff_path()
       end
 
       p "Verify File List: #{diff_paths}"
