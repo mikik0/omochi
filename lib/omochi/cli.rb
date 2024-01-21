@@ -11,7 +11,7 @@ module Omochi
         true
       end
     end
-    
+
     desc "red WORD", " words print." # コマンドの使用例と、概要
     def red(word) # コマンドはメソッドとして定義する
       say(word, :red)
@@ -36,7 +36,9 @@ module Omochi
         diff_paths = local_diff_path()
       end
 
+      diff_paths = diff_paths.reject { |s| !s.end_with?('.rb') || s.end_with?('_spec.rb') }
       p "Verify File List: #{diff_paths}"
+
       # diff_paths 例: ["lib/omochi/cli.rb", "lib/omochi/git.rb", "spec/lib/omochi/cli_spec.rb"]
       diff_paths.each do |diff_path|
         spec_file_path = find_spec_file(diff_path)
