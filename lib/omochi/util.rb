@@ -29,8 +29,8 @@ def github_diff_path()
   diff_command = "gh pr diff --name-only"
   diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: ".")
 
-   # エラーチェック
-   unless _diff_status.success?
+  # エラーチェック
+  unless _diff_status.success?
     puts "Error: Failed to run 'gh pr diff' command."
     return []
   end
@@ -110,7 +110,7 @@ def dfs_describe(node, filename, def_name_arr)
 
   # 子ノードに対して再帰的に深さ優先探索
   node.children.each { |child| dfs_describe(child, filename, def_name_arr) }
-   def_name_arr
+  def_name_arr
 end
 
 def print_result(filename, result)
@@ -140,5 +140,5 @@ def get_ignore_methods(diff_path)
     end
   end
 
-  return ignore_methods
+  ignore_methods
 end

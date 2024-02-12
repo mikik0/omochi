@@ -4,17 +4,11 @@ require 'thor'
 require "omochi/util"
 
 module Omochi
-  # class Error < StandardError; end
   class CLI < Thor
     class << self
       def exit_on_failure?
         true
       end
-    end
-
-    desc "red WORD", " words print." # コマンドの使用例と、概要
-    def red(word) # コマンドはメソッドとして定義する
-      say(word, :red)
     end
 
     desc "verify local_path", "verify spec created for all of new methods and functions"
@@ -67,20 +61,15 @@ module Omochi
             if result.key?(spec_def_name)
               result[spec_def_name] = true
             end
-
-          ignored_def_names.each do |def_name|
-            if result.key?(def_name)
-              result[def_name] = true
+            ignored_def_names.each do |def_name|
+              if result.key?(def_name)
+                result[def_name] = true
+              end
             end
           end
-
-          end
-
           if print_result(diff_path, result).size > 0
             perfect = false
           end
-
-
         else
           # ここから対応するSpecファイルが存在しない場合のロジック
           p "specファイルなし"
@@ -103,23 +92,6 @@ module Omochi
 
       # perfect じゃない場合は、異常終了する
       exit(perfect ? 0 : 1)
-
-      # exprs = get_ast(diff_paths)
-      # exprs.each do |expr|
-      #   dfs(expr[:ast], expr[:filename], def_name_hash)
-      # end
-      # no_spec_files = []
-      # diff_paths = find_spec_files(def_name_hash, no_spec_files) # テストがあるspecファイル / テストがないのはハッシュ(ファイル名とメソッド名)に保存しておく。
-      # # diff_paths 例: ["spec/lib/omochi/cli_spec.rb", "spec/lib/omochi/cli_spec.rb", "spec/lib/omochi/cli_spec.rb"]
-      # exprs = get_spec_method(diff_paths) # []の中にastが入る
-      # exprs.each do |expr|
-      #   dfs_describe(expr[:ast], expr[:filename], def_name_hash_2)
-      # end
-
-      # 深さ優先探索を行う
-      # そのファイルをastにして、describeを探す. describe_values
-      # テストの見つからなかった関数(関数名+ファイル名)のリストをreturn
-      # lenが0だったらsuccess、1異常ならfailでverifyは終わり
     end
   end
 end
