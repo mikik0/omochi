@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor'
   spec.add_dependency 'parser'
   spec.add_dependency 'rspec'
+  spec.add_dependency 'aws-sdk-bedrockruntime'
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
