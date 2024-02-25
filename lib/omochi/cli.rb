@@ -64,6 +64,16 @@ module Omochi
           spec_def_name_arr.each do |spec_def_name|
             if result.key?(spec_def_name)
               result[spec_def_name] = true
+              if create_spec
+                result.each do |test|
+                  if test[1] != true
+                    code = test[1]
+                    puts "==================================================================="
+                    puts "#{spec_def_name} のテストを以下に表示します。"
+                    create_spec_by_bedrock(code)
+                  end
+                end
+              end
             end
             ignored_def_names.each do |def_name|
               if result.key?(def_name)
@@ -78,8 +88,8 @@ module Omochi
           # ここから対応するSpecファイルが存在しない場合のロジック
           p "specファイルなし"
           exprs = get_ast(diff_path)
-          @code = exprs[0][:ast]
-          @test = Unparser.unparse(@code)
+          code = exprs[0][:ast]
+          test = Unparser.unparse(code)
 
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
@@ -94,37 +104,14 @@ module Omochi
           if print_result(diff_path, result).size > 0
             perfect = false
           end
+
+          if create_spec
+            puts "==================================================================="
+            puts "#{diff_path} のテストを以下に表示します。"
+            create_spec_by_bedrock(test)
+          end
         end
       end
-
-      if create_spec
-        # 必要な関数だけ渡すのと比較する。
-        bedrock_client = Aws::BedrockRuntime::Client.new(region: "us-east-1")
-        comment = "You are a brilliant Ruby programmer. You have been assigned to a project to automate QA testing for a system. Please write the Ruby function you want to test inside the <code> XML tags. Write the tests using RSpec to cover all branches of the function comprehensively. Include many test cases to thoroughly verify the function. Please output the test code inside the <test> XML tags. Do not include any content besides the test code. <code> #{@test} </code>"
-        body_data = {
-            "prompt": "\n\nHuman: #{comment}\n\nAssistant:",
-            "max_tokens_to_sample": 4000,
-            "temperature": 0.0,
-            "stop_sequences": [
-                "\n\nHuman:"
-            ],
-            "anthropic_version": "bedrock-2023-05-31"
-        }
-        response = bedrock_client.invoke_model({
-            accept: "*/*",
-            content_type: "application/json",
-            body: body_data.to_json,
-            model_id: "anthropic.claude-instant-v1",
-        })
-
-        string_io_object = response.body
-        string_io_object.rewind
-        string_io_object.each_line do |line|
-            puts "############################################"
-            puts line
-        end
-      end
-
       # perfect じゃない場合は、異常終了する
       exit(perfect ? 0 : 1)
     end

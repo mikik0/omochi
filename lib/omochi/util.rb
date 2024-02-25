@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require 'open3'
 require 'parser/current'
+require 'json'
+require 'nokogiri'
 
 include AST::Processor::Mixin
 
@@ -64,13 +66,12 @@ def dfs(node, filename, result)
 
   # ノードの種類に応じて処理を実行
   case node.type
-  when :send
-    return if node.children[1] == :private
   when :def
     # :def ノードの場合、メソッド定義に関する処理を実行
     # ファイル名とメソッド名をつめてます。
     child_value = node.children[0]
-    result[child_value] = false
+    code = Unparser.unparse(node)
+    result[child_value] = code
   end
 
   # 子ノードに対して再帰的に深さ優先探索
@@ -114,7 +115,7 @@ end
 
 def print_result(filename, result)
   puts "\e[31m======= RESULT: #{filename} =======\e[0m"
-  method_list = result.select { |key, value| value == false }.keys
+  method_list = result.select { |key, value| value != true }.keys
   method_list.each do |file|
     puts "- \e[32m#{file}\e[0m"
   end
@@ -129,15 +130,45 @@ def get_ignore_methods(diff_path)
 
   lines.each do |line|
     if line.match(/omochi:ignore:*/) && line.strip.start_with?("#")
-      @ignore_next_function = true
+      ignore_next_function = true
     elsif line.match(/\s*def\s+(\w+)/)
       method_name = $1
-      if @ignore_next_function
+      if ignore_next_function
         ignore_methods << method_name
-        @ignore_next_function = false
+        ignore_next_function != true
       end
     end
   end
 
   ignore_methods
+end
+
+def create_spec_by_bedrock(code)
+  # 必要な関数だけ渡すのと比較する。
+  bedrock_client = Aws::BedrockRuntime::Client.new(region: "us-east-1")
+  comment = "You are a brilliant Ruby programmer. You have been assigned to a project to automate QA testing for a system. Please write the Ruby function you want to test inside the <code> XML tags. Write the tests using RSpec to cover all branches of the function comprehensively. Include many test cases to thoroughly verify the function. You must output the test code inside the <test> XML tags absolutely. Do not include any content besides the test code. <code> #{code} </code>"
+  body_data = {
+      "prompt": "\n\nHuman: #{comment}\n\nAssistant:",
+      "max_tokens_to_sample": 4000,
+      "temperature": 0.0,
+      "stop_sequences": [
+          "\n\nHuman:"
+      ]
+  }
+  response = bedrock_client.invoke_model({
+      accept: "*/*",
+      content_type: "application/json",
+      body: body_data.to_json,
+      model_id: "anthropic.claude-v2:1",
+  })
+
+  string_io_object = response.body
+  data = JSON.parse(string_io_object.string)
+  code_html = data["completion"]
+
+  # nokogiri を使用して HTML を解析し、<test> タグの中身を取得
+  doc = Nokogiri::HTML(code_html)
+  code_content = doc.at('test').content.strip
+
+  puts code_content
 end
