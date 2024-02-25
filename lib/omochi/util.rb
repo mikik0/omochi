@@ -7,7 +7,7 @@ require 'nokogiri'
 
 include AST::Processor::Mixin
 
-def local_diff_path()
+def local_diff_path
   # Gitがインストールされているか確認
   unless system('git --version > /dev/null 2>&1')
     puts 'Error: Git is not installed. Please install Git.'
@@ -25,12 +25,12 @@ def local_diff_path()
   end
 
   # 取得したdiffのpathを返却する
-  diff_paths = diff_output.split("\n")
+  diff_output.split("\n")
 end
 
-def github_diff_path()
-  diff_command = "gh pr diff --name-only"
-  diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: ".")
+def github_diff_path
+  diff_command = 'gh pr diff --name-only'
+  diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: '.')
 
   # エラーチェック
   unless _diff_status.success?
@@ -38,10 +38,10 @@ def github_diff_path()
     return []
   end
   # 取得したdiffのpathを返却する
-  diff_paths = diff_output.split("\n")
+  diff_output.split("\n")
 end
 
-def remote_diff_path()
+def remote_diff_path
   # リモートのdiffを取得する
   diff_command = 'git diff --name-only origin/${{ github.event.pull_request.base.ref }}..${{ github.sha }}'
   diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: '.')
@@ -53,7 +53,7 @@ def remote_diff_path()
   end
 
   # 取得したdiffのpathを返却する
-  diff_paths = diff_output.split("\n")
+  diff_output.split("\n")
 end
 
 def get_ast(diff_path)
@@ -116,7 +116,7 @@ end
 
 def print_result(filename, result)
   puts "\e[31m======= RESULT: #{filename} =======\e[0m"
-  method_list = result.select { |_key, value| value != true }.keys
+  method_list = result.reject { |_key, value| value == true }.keys
   method_list.each do |file|
     puts "- \e[32m#{file}\e[0m"
   end
@@ -128,16 +128,17 @@ def get_ignore_methods(diff_path)
   ignore_methods = []
   code = File.open(diff_path, 'r').read
   lines = code.split("\n")
+  ignore_next_function = false
 
   lines.each do |line|
     if line.match(/omochi:ignore:*/) && line.strip.start_with?('#')
       ignore_next_function = true
-    elsif line.match(/\s*def\s+(\w+)/)
-      method_name = Regexp.last_match(1)
-      if ignore_next_function
-        ignore_methods << method_name
-        ignore_next_function != true
-      end
+      next
+    end
+
+    if ignore_next_function && line.match(/\s*def\s+(\w+)/)
+      ignore_methods << Regexp.last_match(1)
+      ignore_next_function = false
     end
   end
 
