@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'omochi'
 require 'thor'
 require 'omochi/util'
@@ -15,24 +16,24 @@ module Omochi
       end
     end
 
-    desc "verify local_path", "verify spec created for all of new methods and functions"
-    method_option :github, aliases: "-h", desc: "Running on GitHub Action"
-    method_option :create, aliases: "-c", desc: "Create Spec for Untested Method"
-    def verify()
-      is_gh_action = options[:github] == "github"
+    desc 'verify local_path', 'verify spec created for all of new methods and functions'
+    method_option :github, aliases: '-h', desc: 'Running on GitHub Action'
+    method_option :create, aliases: '-c', desc: 'Create Spec for Untested Method'
+    def verify
+      is_gh_action = options[:github] == 'github'
       is_gl_ci_runner = false
-      create_spec = options[:create] == "create"
+      create_spec = options[:create] == 'create'
 
       perfect = true
       spec_def_name_arr = []
 
       case [is_gh_action, is_gl_ci_runner]
       when [true, false]
-        diff_paths = github_diff_path()
+        diff_paths = github_diff_path
       when [false, true]
-        diff_paths = remote_diff_path()
+        diff_paths = remote_diff_path
       when [false, false]
-        diff_paths = local_diff_path()
+        diff_paths = local_diff_path
       end
 
       # Ruby 以外のファイル(yamlやmdなど)を除外 specファイルも除外(テストにはテストない)
@@ -46,7 +47,7 @@ module Omochi
         ignored_def_names = get_ignore_methods(diff_path)
 
         if !spec_file_path.nil?
-          p "specファイルあり"
+          p 'specファイルあり'
           # ここから対応するSpecファイルが存在した場合のロジック
           # スペックファイルがあれば、specfileの中身を確認していく。
           # defメソッド名だけ切り出す {:call => false, :verify => false, ....}
@@ -62,31 +63,29 @@ module Omochi
           end
           # resultのHashでSpecが存在するものをTrueに更新
           spec_def_name_arr.each do |spec_def_name|
-            if result.key?(spec_def_name)
-              result[spec_def_name] = true
-              if create_spec
-                result.each do |test|
-                  if test[1] != true
-                    code = test[1]
-                    puts "==================================================================="
-                    puts "#{spec_def_name} のテストを以下に表示します。"
-                    create_spec_by_bedrock(code)
-                  end
-                end
-              end
-            end
-            ignored_def_names.each do |def_name|
-              if result.key?(def_name)
-                result[def_name] = true
-              end
+            next unless result.key?(spec_def_name)
+
+            result[spec_def_name] = true
+
+            next unless create_spec
+
+            result.each do |method_code|
+              next if method_code[1] == true
+
+              code = method_code[1]
+              puts '==================================================================='
+              puts "#{spec_def_name} のテストを以下に表示します。"
+              create_spec_by_bedrock(method_code)
             end
           end
-          if print_result(diff_path, result).size > 0
-            perfect = false
+
+          ignored_def_names.each do |def_name|
+            result[def_name] = true if result.key?(def_name)
           end
+          perfect = false if print_result(diff_path, result).size > 0
         else
           # ここから対応するSpecファイルが存在しない場合のロジック
-          p "specファイルなし"
+          p 'specファイルなし'
           exprs = get_ast(diff_path)
           code = exprs[0][:ast]
           test = Unparser.unparse(code)
@@ -96,17 +95,13 @@ module Omochi
           end
           result = result.transform_keys(&:to_s)
           ignored_def_names.each do |def_name|
-            if result.key?(def_name)
-              result[def_name] = true
-            end
+            result[def_name] = true if result.key?(def_name)
           end
 
-          if print_result(diff_path, result).size > 0
-            perfect = false
-          end
+          perfect = false if print_result(diff_path, result).size > 0
 
           if create_spec
-            puts "==================================================================="
+            puts '==================================================================='
             puts "#{diff_path} のテストを以下に表示します。"
             create_spec_by_bedrock(test)
           end
