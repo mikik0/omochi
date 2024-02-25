@@ -58,7 +58,7 @@ end
 
 def get_ast(diff_path)
   exprs = []
-  ast, comments = Parser::CurrentRuby.parse_with_comments(File.read(diff_path))
+  ast = Parser::CurrentRuby.parse(File.read(diff_path))
   exprs << { ast: ast, filename: diff_path }
 end
 
