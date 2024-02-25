@@ -1,35 +1,88 @@
 # Omochi
 
-TODO: Delete this and the text below, and describe your gem
+Omochiは、Ruby on Railsの開発を支援するCLIツールです。
+未着手のRSpecファイルとメソッドを出力し、それに付随するサンプルコードを生成します。
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/omochi`. To experiment with that code, run `bin/console` for an interactive prompt.
+Omochiを導入することのメリットは2つです。
+1つ目が、Omochiはテスト実装のないメソッドを警告するので、テスト実装を強制することができます。
+github actionでの未実装のテストを警告することもサポートしています。
+2つ目が、Ruby on RailsにおけるRSpec開発の負担を軽減することです。
+Omochiでは、未実装のテストに関するSpecファイルを生成します。
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+```
+gem specific_install -l https://github.com/mikik0/omochi.git
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+コマンドでのUsageの確認
 
-## Development
+```
+$ omochi --help
+Commands:
+  omochi help [COMMAND]     # Describe available commands or one specific command
+  omochi verify local_path  # verify spec created for all of new methods and functions
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+## Commands
+### verify
+
+ローカルで、未実装のテストを確認する。
+ローカルでの実行では、コミットされていない差分に対して、Specが実装されているかを確認します。
+
+```
+# ローカルのでの実行
+omochi verify local_path
+```
+
+なお、Spec実装が不要なメソッドには、以下のようにメソッドの前にコメントアウトをつけることで警告を抑制できます。
+
+```ruby
+#omochi:ignore:
+```
+
+### --create オプション
+
+-c オプションを付与することで、未実装のSpecをLLMを用いて生成します。
+サンプルコードは標準出力に出力されます。
+
+```
+# Specファイルの雛形を生成
+$ omochi verify local_path -c
+または
+$ omochi verify local_path --create
+```
+
+### --github オプション
+
+-h オプションを付与することで、GitHubアクションを用いたPRに対するSpecの検知を行うことができます。
+これは、該当するPull Requestにおける差分を検知し、メソッドにSpecがあるかどうかを確認します。
+内部的には、`gh pr diff`コマンドを用いています。
+
+```
+$ omochi verify local_path -h
+または、
+$ omochi verify local_path --github
+```
+
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/omochi. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/omochi/blob/master/CODE_OF_CONDUCT.md).
+Bug reportsとpull requestsは、GitHub (https://github.com/mikik0/omochi) で受け付けています。
+このプロジェクトは、安全で居心地の良いコラボレーションのスペースとなることを目的としています。
 
-## Code of Conduct
+### Design
 
-Everyone interacting in the Omochi project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/omochi/blob/master/CODE_OF_CONDUCT.md).
+1. `git diff` を取得する。--github オプションでは、`gh pr diff` を取得する
+2. 差分のあったファイルの中から `.rb` だけを全て取得する
+3. `.rb` ファイルを parser gem を用いて、抽象構文木(AST) にパースする
+4. 取得したASTに対して、深さ優先探索(DFS)を用いて、全てのメソッドを取得する
+5. 取得した全てのメソッドに対応するSpecがあるかどうかを確認するため、対応するSpecファイルを取得する
+6. 取得したSpecファイルでも同様に、parser gem を用いて、抽象構文木(AST) にパースする
+7. 取得したSpecファイルのASTにおいても同様に、深さ優先探索(DFS)を用いる。　describe に対応するメソッドが記述されているかを確認する。ここでは、 describe に、テストしたいメソッドのメソッド名が入っていることを前提としている。
+8. Specが実装されていないメソッドが存在すれば出力し、異常終了する。Specが実装されていないメソッドが存在しなければ正常終了する。
+9. --create オプションでは、Specが実装されていないメソッドに対するSpecの雛形を生成する。この際には、Amazon Bedrockを用いる。

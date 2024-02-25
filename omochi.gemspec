@@ -34,6 +34,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'parser'
   spec.add_dependency 'rspec'
   spec.add_dependency 'aws-sdk-bedrockruntime'
+  spec.add_dependency 'nokogiri'
+  spec.add_dependency 'dotenv'
+  spec.add_dependency 'unparser'
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"

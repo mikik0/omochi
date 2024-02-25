@@ -79,7 +79,6 @@ end
 
 def find_spec_file(diff_path)
   spec_path = File.join('spec', diff_path.gsub(/\.rb$/, '_spec.rb').gsub('app/', ''))
-  p spec_path
   return File.exist?(spec_path) ? spec_path : nil
 end
 
