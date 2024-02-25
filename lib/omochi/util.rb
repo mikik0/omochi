@@ -148,7 +148,13 @@ end
 def create_spec_by_bedrock(code)
   # 必要な関数だけ渡すのと比較する。
   bedrock_client = Aws::BedrockRuntime::Client.new(region: 'us-east-1')
-  comment = "You are a brilliant Ruby programmer. You have been assigned to a project to automate QA testing for a system. Please write the Ruby function you want to test inside the <code> XML tags. Write the tests using RSpec to cover all branches of the function comprehensively. Include many test cases to thoroughly verify the function. You must output the test code inside the <test> XML tags absolutely. Do not include any content besides the test code. <code> #{code} </code>"
+  comment = "You are a brilliant Ruby programmer.
+You have been assigned to a project to automate QA testing for a system.
+Please write the Ruby function you want to test inside the <code> XML tags.
+Write the tests using RSpec to cover all branches of the function comprehensively.
+Include many test cases to thoroughly verify the function.
+You must output the test code inside the <test> XML tags absolutely.
+Do not include any content besides the test code. <code> #{code} </code>"
   body_data = {
     "prompt": "\n\nHuman: #{comment}\n\nAssistant:",
     "max_tokens_to_sample": 4000,
