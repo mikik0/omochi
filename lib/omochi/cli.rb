@@ -50,8 +50,10 @@ module Omochi
           p 'specファイルあり'
           # ここから対応するSpecファイルが存在した場合のロジック
           # スペックファイルがあれば、specfileの中身を確認していく。
-          # defメソッド名だけ切り出す {:call => false, :verify => false, ....}
+          # defメソッド名だけ切り出す {:call => {code}, :verify => {code}, ....}
           exprs = get_ast(diff_path)
+
+          # ASTを再帰的に探索し、メソッド名とコードを取得
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
           end
@@ -87,8 +89,6 @@ module Omochi
           # ここから対応するSpecファイルが存在しない場合のロジック
           p 'specファイルなし'
           exprs = get_ast(diff_path)
-          code = exprs[0][:ast]
-          test = Unparser.unparse(code)
 
           exprs.each do |expr|
             dfs(expr[:ast], expr[:filename], result)
@@ -101,9 +101,13 @@ module Omochi
           perfect = false if print_result(diff_path, result).size > 0
 
           if create_spec
+            # exprs[0] の AST からメソッド内のコードを生成
+            ast_code = exprs[0][:ast]
+            method_code = Unparser.unparse(ast_code)
+
             puts '==================================================================='
             puts "#{diff_path} のテストを以下に表示します。"
-            create_spec_by_bedrock(test)
+            create_spec_by_bedrock(method_code)
           end
         end
       end
