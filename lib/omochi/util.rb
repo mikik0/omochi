@@ -156,23 +156,26 @@ Include many test cases to thoroughly verify the function.
 You must output the test code inside the <test> XML tags absolutely.
 Do not include any content besides the test code. <code> #{code} </code>"
   body_data = {
-    "prompt": "\n\nHuman: #{comment}\n\nAssistant:",
-    "max_tokens_to_sample": 4000,
+    "anthropic_version": "bedrock-2023-05-31",
+    "max_tokens": 4000,
     "temperature": 0.0,
-    "stop_sequences": [
-      "\n\nHuman:"
-    ]
+    "messages": [
+            {
+                "role": "user",
+                "content": "#{comment}"
+            }
+        ]
   }
   response = bedrock_client.invoke_model({
                                            accept: '*/*',
                                            content_type: 'application/json',
                                            body: body_data.to_json,
-                                           model_id: 'anthropic.claude-v2:1'
+                                           model_id: 'anthropic.claude-3-sonnet-20240229-v1:0'
                                          })
 
   string_io_object = response.body
   data = JSON.parse(string_io_object.string)
-  code_html = data['completion']
+  code_html = data['content'][0]['text']
 
   # nokogiri を使用して HTML を解析し、<test> タグの中身を取得
   doc = Nokogiri::HTML(code_html)
