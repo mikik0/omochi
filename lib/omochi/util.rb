@@ -145,6 +145,75 @@ def get_ignore_methods(diff_path)
   ignore_methods
 end
 
+def process_spec_file(diff_path, create_spec, perfect)
+  # 対応するSpecファイルが存在した場合のロジック
+  result = {}
+  spec_def_name_arr = []
+  spec_file_path = find_spec_file(diff_path)
+  # スペックファイルがあれば、specfileの中身を確認していく。
+  # defメソッド名だけ切り出す {:call => {code}, :verify => {code}, ....}
+  # ASTを再帰的に探索し、メソッド名とコードを取得
+  get_ast(diff_path).each do |expr|
+    dfs(expr[:ast], expr[:filename], result)
+  end
+  result = result.transform_keys(&:to_s)
+  # describeメソッド [call]
+  # []の中にastが入る
+  get_ast(spec_file_path).each do |expr|
+    spec_def_name_arr = dfs_describe(expr[:ast], expr[:filename], spec_def_name_arr)
+  end
+
+  # resultのHashでSpecが存在するものをTrueに更新
+  spec_def_name_arr.each do |spec_def_name|
+    next unless result.key?(spec_def_name)
+
+    result[spec_def_name] = true
+
+    next unless create_spec
+
+    method_code = result[spec_def_name]
+    puts '==================================================================='
+    puts "#{spec_def_name} のテストを以下に表示します。"
+    create_spec_by_bedrock(method_code)
+  end
+
+  get_ignore_methods(diff_path).each do |def_name|
+    result[def_name] = true if result.key?(def_name)
+  end
+
+  perfect = false if print_result(diff_path, result).size > 0
+
+  perfect
+end
+
+def process_missing_spec_file(diff_path, create_spec, perfect)
+  # 対応するSpecファイルが存在しない場合のロジック
+  result = {}
+  spec_def_name_arr = []
+  spec_file_path = find_spec_file(diff_path)
+  ignored_def_names = get_ignore_methods(diff_path)
+  get_ast(diff_path).each do |expr|
+    dfs(expr[:ast], expr[:filename], result)
+  end
+  result = result.transform_keys(&:to_s)
+
+  ignored_def_names.each do |def_name|
+    result[def_name] = true if result.key?(def_name)
+  end
+
+  perfect = false if print_result(diff_path, result).size > 0
+
+  if create_spec
+    # exprs[0] の AST からメソッド内のコードを生成
+    ast_code = get_ast(diff_path)[0][:ast]
+    method_code = Unparser.unparse(ast_code)
+
+    puts '==================================================================='
+    puts "#{diff_path} のテストを以下に表示します。"
+    create_spec_by_bedrock(method_code)
+  end
+end
+
 def create_spec_by_bedrock(code)
   # 必要な関数だけ渡すのと比較する。
   bedrock_client = Aws::BedrockRuntime::Client.new(region: 'us-east-1')
