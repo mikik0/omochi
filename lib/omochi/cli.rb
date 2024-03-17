@@ -26,13 +26,13 @@ module Omochi
       perfect = true
 
       diff_paths = case [is_gh_action, is_gl_ci_runner]
-                    when [true, false]
-                      github_diff_path
-                    when [false, true]
-                      remote_diff_path
-                    when [false, false]
-                      local_diff_path
-                    end
+                   when [true, false]
+                     github_diff_path
+                   when [false, true]
+                     remote_diff_path
+                   when [false, false]
+                     local_diff_path
+                   end
 
       # Ruby 以外のファイル(yamlやmdなど)を除外 specファイルも除外(テストにはテストない)
       diff_paths.reject! { |s| !s.end_with?('.rb') || s.end_with?('_spec.rb') }
@@ -48,7 +48,7 @@ module Omochi
           process_missing_spec_file(diff_path, create_spec, perfect)
         end
       end
-        exit(perfect ? 0 : 1)
-      end
+      exit(perfect ? 0 : 1)
     end
   end
+end

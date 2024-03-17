@@ -203,15 +203,15 @@ def process_missing_spec_file(diff_path, create_spec, perfect)
 
   perfect = false if print_result(diff_path, result).size > 0
 
-  if create_spec
-    # exprs[0] の AST からメソッド内のコードを生成
-    ast_code = get_ast(diff_path)[0][:ast]
-    method_code = Unparser.unparse(ast_code)
+  return unless create_spec
 
-    puts '==================================================================='
-    puts "#{diff_path} のテストを以下に表示します。"
-    create_spec_by_bedrock(method_code)
-  end
+  # exprs[0] の AST からメソッド内のコードを生成
+  ast_code = get_ast(diff_path)[0][:ast]
+  method_code = Unparser.unparse(ast_code)
+
+  puts '==================================================================='
+  puts "#{diff_path} のテストを以下に表示します。"
+  create_spec_by_bedrock(method_code)
 end
 
 def create_spec_by_bedrock(code)
@@ -225,15 +225,15 @@ Include many test cases to thoroughly verify the function.
 You must output the test code inside the <test> XML tags absolutely.
 Do not include any content besides the test code. <code> #{code} </code>"
   body_data = {
-    "anthropic_version": "bedrock-2023-05-31",
+    "anthropic_version": 'bedrock-2023-05-31',
     "max_tokens": 4000,
     "temperature": 0.0,
     "messages": [
-            {
-                "role": "user",
-                "content": "#{comment}"
-            }
-        ]
+      {
+        "role": 'user',
+        "content": "#{comment}"
+      }
+    ]
   }
   response = bedrock_client.invoke_model({
                                            accept: '*/*',
