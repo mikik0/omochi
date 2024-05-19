@@ -170,15 +170,7 @@ This project should be a safe place for collaboration.
 
 ### Design
 
-1. `git diff` を取得する。--github オプションでは、`gh pr diff` を取得する
-2. 差分のあったファイルの中から `.rb` だけを全て取得する
-3. `.rb` ファイルを parser gem を用いて、抽象構文木(AST) にパースする
-4. 取得したASTに対して、深さ優先探索(DFS)を用いて、全てのメソッドを取得する
-5. 取得した全てのメソッドに対応するSpecがあるかどうかを確認するため、対応するSpecファイルを取得する
-6. 取得したSpecファイルでも同様に、parser gem を用いて、抽象構文木(AST) にパースする
-7. 取得したSpecファイルのASTにおいても同様に、深さ優先探索(DFS)を用いる。　describe に対応するメソッドが記述されているかを確認する。ここでは、 describe に、テストしたいメソッドのメソッド名が入っていることを前提としている。
-8. Specが実装されていないメソッドが存在すれば出力し、異常終了する。Specが実装されていないメソッドが存在しなければ正常終了する。
-9. --create オプションでは、Specが実装されていないメソッドに対するSpecの雛形を生成する。この際には、Amazon Bedrockを用いる。
+See [DESIGN.md](https://github.com/mikik0/omochi/blob/master/DESIGN.md)
 
 ### Development
 
