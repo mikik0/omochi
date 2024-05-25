@@ -15,7 +15,7 @@ def local_diff_path
   end
 
   # ローカルのdiffを取得する
-  diff_command = 'git diff --name-only'
+  diff_command = 'git diff --diff-filter=d --name-only'
   diff_output, _diff_error, _diff_status = Open3.capture3(diff_command, chdir: '.')
 
   # エラーチェック
