@@ -63,8 +63,10 @@ $ omochi verify local_path --github
 $ omochi verify -c
 "Verify File List: [\"lib/omochi/cli.rb\", \"lib/omochi/util.rb\"]"
 "specファイルあり"
+"There are spec files."
 ===================================================================
 verifyのテストを以下に表示します。
+We will show the test of verify below.
 require 'rspec'
 
 describe 'exit_on_failure?' do
@@ -89,6 +91,7 @@ end
 - create_spec_by_bedrock
 ===================================================================
 lib/omochi/util.rbのテストを以下に表示します。
+We will show the test of lib/omochi/util.rb below.
 require "spec_helper"
 
 describe "local_diff_path" do
