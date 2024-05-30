@@ -10,6 +10,8 @@ require 'unparser'
 
 module Omochi
   class CLI < Thor
+    include Omochi::Util
+
     class << self
       def exit_on_failure?
         true
