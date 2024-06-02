@@ -176,6 +176,7 @@ module Omochi
         method_code = result[spec_def_name]
         puts '==================================================================='
         puts "#{spec_def_name} のテストを以下に表示します。"
+        puts "We will show the test of #{spec_def_name} below."
         create_spec_by_bedrock(method_code)
       end
 
@@ -213,6 +214,7 @@ module Omochi
 
       puts '==================================================================='
       puts "#{diff_path} のテストを以下に表示します。"
+      puts "We will show the test of #{diff_path} below."
       create_spec_by_bedrock(method_code)
     end
 
