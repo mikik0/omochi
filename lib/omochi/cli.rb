@@ -42,9 +42,11 @@ module Omochi
       diff_paths.each do |diff_path|
         if find_spec_file(diff_path)
           p 'specファイルあり'
+          p 'There are spec files.'
           process_spec_file(diff_path, create_spec, perfect)
         else
           p 'specファイルなし'
+          p 'There is no spec file.'
           process_missing_spec_file(diff_path, create_spec, perfect)
         end
       end
