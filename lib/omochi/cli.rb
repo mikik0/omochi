@@ -25,7 +25,7 @@ module Omochi
       is_gh_action = options[:github] == 'github'
       is_gl_ci_runner = false
       create_spec = options[:create] == 'create'
-      perfect = true
+      @perfect = true
 
       diff_paths = case [is_gh_action, is_gl_ci_runner]
                    when [true, false]
@@ -45,14 +45,14 @@ module Omochi
         if find_spec_file(diff_path)
           p 'specファイルあり'
           p 'There are spec files.'
-          process_spec_file(diff_path, create_spec, perfect)
+          process_spec_file(diff_path, create_spec, @perfect)
         else
           p 'specファイルなし'
           p 'There is no spec file.'
-          process_missing_spec_file(diff_path, create_spec, perfect)
+          process_missing_spec_file(diff_path, create_spec, @perfect)
         end
       end
-      exit(perfect ? 0 : 1)
+      exit(@perfect ? 0 : 1)
     end
   end
 end

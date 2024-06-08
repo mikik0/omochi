@@ -184,9 +184,7 @@ module Omochi
         result[def_name] = true if result.key?(def_name)
       end
 
-      perfect = false if print_result(diff_path, result).size > 0
-
-      perfect
+      @perfect = false if print_result(diff_path, result).size > 0
     end
 
     def process_missing_spec_file(diff_path, create_spec, perfect)
@@ -204,7 +202,7 @@ module Omochi
         result[def_name] = true if result.key?(def_name)
       end
 
-      perfect = false if print_result(diff_path, result).size > 0
+      @perfect = false if print_result(diff_path, result).size > 0
 
       return unless create_spec
 
