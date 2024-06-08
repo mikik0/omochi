@@ -184,9 +184,7 @@ module Omochi
         result[def_name] = true if result.key?(def_name)
       end
 
-      perfect = false if print_result(diff_path, result).size > 0
-
-      perfect
+      return perfect = false if print_result(diff_path, result).size > 0
     end
 
     def process_missing_spec_file(diff_path, create_spec, perfect)
@@ -204,18 +202,17 @@ module Omochi
         result[def_name] = true if result.key?(def_name)
       end
 
-      perfect = false if print_result(diff_path, result).size > 0
+      if create_spec
+        # exprs[0] の AST からメソッド内のコードを生成
+        ast_code = get_ast(diff_path)[0][:ast]
+        method_code = Unparser.unparse(ast_code)
 
-      return unless create_spec
-
-      # exprs[0] の AST からメソッド内のコードを生成
-      ast_code = get_ast(diff_path)[0][:ast]
-      method_code = Unparser.unparse(ast_code)
-
-      puts '==================================================================='
-      puts "#{diff_path} のテストを以下に表示します。"
-      puts "We will show the test of #{diff_path} below."
-      create_spec_by_bedrock(method_code)
+        puts '==================================================================='
+        puts "#{diff_path} のテストを以下に表示します。"
+        puts "We will show the test of #{diff_path} below."
+        create_spec_by_bedrock(method_code)
+      end
+      return perfect = false if print_result(diff_path, result).size > 0
     end
 
     def create_spec_by_bedrock(code)
