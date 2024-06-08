@@ -58,6 +58,79 @@ module Omochi
       diff_output.split("\n")
     end
 
+    def find_spec_file(diff_path)
+      spec_path = File.join('spec', diff_path.gsub(/\.rb$/, '_spec.rb').gsub('app/', ''))
+      File.exist?(spec_path) ? spec_path : nil
+    end
+
+    def process_spec_file(diff_path, create_spec, perfect)
+      # 対応するSpecファイルが存在した場合のロジック
+      result = {}
+      spec_def_name_arr = []
+      spec_file_path = find_spec_file(diff_path)
+      # スペックファイルがあれば、specfileの中身を確認していく。
+      # defメソッド名だけ切り出す {:call => {code}, :verify => {code}, ....}
+      # ASTを再帰的に探索し、メソッド名とコードを取得
+      get_ast(diff_path).each do |expr|
+        dfs(expr[:ast], expr[:filename], result)
+      end
+      result = result.transform_keys(&:to_s)
+      # describeメソッド [call]
+      # []の中にastが入る
+      get_ast(spec_file_path).each do |expr|
+        spec_def_name_arr = dfs_describe(expr[:ast], expr[:filename], spec_def_name_arr)
+      end
+
+      # resultのHashでSpecが存在するものをTrueに更新
+      spec_def_name_arr.each do |spec_def_name|
+        next unless result.key?(spec_def_name)
+
+        result[spec_def_name] = true
+
+        next unless create_spec
+
+        method_code = result[spec_def_name]
+        puts '==================================================================='
+        puts "#{spec_def_name} のテストを以下に表示します。"
+        puts "We will show the test of #{spec_def_name} below."
+        create_spec_by_bedrock(method_code)
+      end
+
+      get_ignore_methods(diff_path).each do |def_name|
+        result[def_name] = true if result.key?(def_name)
+      end
+
+      return perfect = false if print_result(diff_path, result).size > 0
+    end
+
+    def process_missing_spec_file(diff_path, create_spec, perfect)
+      # 対応するSpecファイルが存在しない場合のロジック
+      result = {}
+      ignored_def_names = get_ignore_methods(diff_path)
+      get_ast(diff_path).each do |expr|
+        dfs(expr[:ast], expr[:filename], result)
+      end
+      result = result.transform_keys(&:to_s)
+
+      ignored_def_names.each do |def_name|
+        result[def_name] = true if result.key?(def_name)
+      end
+
+      if create_spec
+        # exprs[0] の AST からメソッド内のコードを生成
+        ast_code = get_ast(diff_path)[0][:ast]
+        method_code = Unparser.unparse(ast_code)
+
+        puts '==================================================================='
+        puts "#{diff_path} のテストを以下に表示します。"
+        puts "We will show the test of #{diff_path} below."
+        create_spec_by_bedrock(method_code)
+      end
+      return perfect = false if print_result(diff_path, result).size > 0
+    end
+
+    private
+
     def get_ast(diff_path)
       exprs = []
       ast = Parser::CurrentRuby.parse(File.read(diff_path))
@@ -79,11 +152,6 @@ module Omochi
 
       # 子ノードに対して再帰的に深さ優先探索
       node.children.each { |child| dfs(child, filename, result) }
-    end
-
-    def find_spec_file(diff_path)
-      spec_path = File.join('spec', diff_path.gsub(/\.rb$/, '_spec.rb').gsub('app/', ''))
-      File.exist?(spec_path) ? spec_path : nil
     end
 
     # rspecのdescribeでは、通常 # または . の直後に関数名を書くため
@@ -145,74 +213,6 @@ module Omochi
       end
 
       ignore_methods
-    end
-
-    def process_spec_file(diff_path, create_spec, perfect)
-      # 対応するSpecファイルが存在した場合のロジック
-      result = {}
-      spec_def_name_arr = []
-      spec_file_path = find_spec_file(diff_path)
-      # スペックファイルがあれば、specfileの中身を確認していく。
-      # defメソッド名だけ切り出す {:call => {code}, :verify => {code}, ....}
-      # ASTを再帰的に探索し、メソッド名とコードを取得
-      get_ast(diff_path).each do |expr|
-        dfs(expr[:ast], expr[:filename], result)
-      end
-      result = result.transform_keys(&:to_s)
-      # describeメソッド [call]
-      # []の中にastが入る
-      get_ast(spec_file_path).each do |expr|
-        spec_def_name_arr = dfs_describe(expr[:ast], expr[:filename], spec_def_name_arr)
-      end
-
-      # resultのHashでSpecが存在するものをTrueに更新
-      spec_def_name_arr.each do |spec_def_name|
-        next unless result.key?(spec_def_name)
-
-        result[spec_def_name] = true
-
-        next unless create_spec
-
-        method_code = result[spec_def_name]
-        puts '==================================================================='
-        puts "#{spec_def_name} のテストを以下に表示します。"
-        puts "We will show the test of #{spec_def_name} below."
-        create_spec_by_bedrock(method_code)
-      end
-
-      get_ignore_methods(diff_path).each do |def_name|
-        result[def_name] = true if result.key?(def_name)
-      end
-
-      return perfect = false if print_result(diff_path, result).size > 0
-    end
-
-    def process_missing_spec_file(diff_path, create_spec, perfect)
-      # 対応するSpecファイルが存在しない場合のロジック
-      result = {}
-      spec_def_name_arr = []
-      spec_file_path = find_spec_file(diff_path)
-      ignored_def_names = get_ignore_methods(diff_path)
-      get_ast(diff_path).each do |expr|
-        dfs(expr[:ast], expr[:filename], result)
-      end
-      result = result.transform_keys(&:to_s)
-
-      ignored_def_names.each do |def_name|
-        result[def_name] = true if result.key?(def_name)
-      end
-
-      if create_spec
-        # exprs[0] の AST からメソッド内のコードを生成
-        ast_code = get_ast(diff_path)[0][:ast]
-        method_code = Unparser.unparse(ast_code)
-
-        puts '==================================================================='
-        puts "#{diff_path} のテストを以下に表示します。"
-        puts "We will show the test of #{diff_path} below."
-        create_spec_by_bedrock(method_code)
-      end
-      return perfect = false if print_result(diff_path, result).size > 0
     end
 
     def create_spec_by_bedrock(code)
