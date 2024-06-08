@@ -49,7 +49,7 @@ module Omochi
         else
           p 'specファイルなし'
           p 'There is no spec file.'
-          process_missing_spec_file(diff_path, create_spec, perfect)
+          perfect = process_missing_spec_file(diff_path, create_spec, perfect)
         end
       end
       exit(perfect ? 0 : 1)
