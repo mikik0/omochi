@@ -6,9 +6,7 @@ There are two advantages of using Omochi. We can make sure every method is cover
 
 ## Installation
 
-```
-$ gem specific_install -l https://github.com/mikik0/omochi.git
-```
+    $ gem install omochi
 
 ## Usage
 
