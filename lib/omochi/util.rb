@@ -217,7 +217,7 @@ module Omochi
 
     def create_spec_by_bedrock(code)
       # 必要な関数だけ渡すのと比較する。
-      bedrock_client = Aws::BedrockRuntime::Client.new(region: 'us-east-1')
+      bedrock_client = Aws::BedrockRuntime::Client.new(region: 'us-west-2')
       comment = "You are a brilliant Ruby programmer.
 You have been assigned to a project to automate QA testing for a system.
 Please write the Ruby function you want to test inside the <code> XML tags.
@@ -240,7 +240,7 @@ Do not include any content besides the test code. <code> #{code} </code>"
         accept: '*/*',
         content_type: 'application/json',
         body: body_data.to_json,
-        model_id: 'anthropic.claude-3-sonnet-20240229-v1:0'
+        model_id: 'anthropic.claude-3-5-sonnet-20240620-v1:0'
       })
 
       string_io_object = response.body
