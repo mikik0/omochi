@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'Omochi is a CLI tool to support Ruby on Rails development with RSpec.'
   spec.homepage = 'https://github.com/mikik0/omochi'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.6.0'
+  spec.required_ruby_version = '>= 3.2.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/mikik0/omochi'
@@ -28,11 +28,12 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'aws-sdk-bedrockruntime'
-  spec.add_dependency 'dotenv'
-  spec.add_dependency 'nokogiri'
-  spec.add_dependency 'parser'
-  spec.add_dependency 'rspec'
-  spec.add_dependency 'thor'
-  spec.add_dependency 'unparser'
+  spec.add_dependency 'aws-sdk-bedrockruntime', '>= 1.0'
+  spec.add_dependency 'dotenv', '>= 2.8'
+  spec.add_dependency 'nokogiri', '>= 1.14'
+  spec.add_dependency 'parser', '>= 3.2'
+  spec.add_dependency 'thor', '>= 1.0'
+  spec.add_dependency 'unparser', '>= 0.6'
+
+  spec.add_development_dependency 'rspec', '>= 3.0'
 end
